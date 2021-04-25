@@ -6,6 +6,7 @@ require(['jquery','local_datatablescrud/select2'], function($){
 
 
     $('#aboutuserid').change(function () {
+		alert('hhh');
         $('.mod_smartquest_completepage > h4 > b > u').text($('#aboutuserid option:selected').text())
     });
 });

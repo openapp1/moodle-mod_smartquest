@@ -232,6 +232,8 @@ if ($fullname) {
         $tablecolumns[] = 'select';
         $tableheaders[] = get_string('select');
     }
+    $tablecolumns[] = 'forfeedback';
+    $tableheaders[] = get_string('forfeedback', 'smartquest');
 
     $table = new flexible_table('smartquest-shownonrespondents-'.$course->id);
 
@@ -252,6 +254,8 @@ if ($fullname) {
 
     $table->no_sorting('status');
     $table->no_sorting('select');
+    $table->no_sorting('forfeedback');
+
 
     $table->setup();
 
@@ -367,6 +371,9 @@ if (!$nonrespondents) {
                 $data[] = '<input type="checkbox" class="usercheckbox" name="messageuser[]" value="'.
                     $user->id.'" alt="'.$checkboxaltvalue.'" />';
             }
+            $feedbackurl = 'https://video.openapp.co.il/dev/mod/smartquest/complete.php?id=' . $cm->id . '&user=' . $user->id;
+            $feedbacklink = '<strong><a href="'.$feedbackurl.'">'.get_string('forfeedback', 'smartquest').'</a></strong>';
+            $data[] = $feedbacklink;  
             $table->add_data($data);
 
         }

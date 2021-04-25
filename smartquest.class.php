@@ -174,7 +174,7 @@ class smartquest {
         $this->page = $page;
     }
 
-    public function view() {
+    public function view($userid) {
         global $CFG, $USER, $PAGE;
 
         $PAGE->set_title(format_string($this->name));
@@ -233,7 +233,7 @@ class smartquest {
             // Handle the main smartquest completion page.
             $quser = $USER->id;
 
-            $msg = $this->print_survey($USER->id, $quser);
+            $msg = $this->print_survey($userid, $quser);
 
             // If Smsrtquest was submitted with all required fields completed ($msg is empty),
             // then record the submittal.
@@ -482,11 +482,15 @@ class smartquest {
                 break;
             case STUDEFFECT:
                 $rtypetext = get_string('rtypestudeffect', 'smartquest');
+                //TOVI
+                // there is problem with users select
+                /*
                 if ($aboutuserid) {
                     if ($aboutuser = core_user::get_user($aboutuserid)) {
                         $rtypetext = get_string('rtypestudeffectwithuser', 'smartquest', $aboutuser);
                     }
                 }
+                */
                 break;
             case GUIDELINE:
                 $rtypetext = get_string('rtypeguideline', 'smartquest');
@@ -992,6 +996,8 @@ class smartquest {
             'a' => $this->id, 'sid' => $this->survey->id, 'rid' => $formdatarid, 'sec' => $formdata->sec, 'sesskey' => sesskey()]));
 
         if (isset($this->questions) && $numsections) { // Sanity check.
+            //TOVI
+            $formdata->aboutuserid = $userid; 
             $this->survey_render($formdata->sec, $msg, $formdata);
             $controlbuttons = [];
             if ($formdata->sec > 1) {
@@ -1056,7 +1062,9 @@ class smartquest {
                         'label' => get_string('chooseuser', 'smartquest'),
                         'name' => 'aboutuserid',
                         'class' => 'select custom-select menu',
+                        //TOVI
                         'options' => smartquest_get_studeffect_users($this->sid, $formdata->aboutuserid, 1)
+                        //'options' => smartquest_get_studeffect_users($this->sid, 9, 1)
                     ]
                 ]
             ];
@@ -1146,7 +1154,7 @@ class smartquest {
             }
         }
         if ($ruser) {
-            $respinfo = get_string('respondent', 'smartquest').': <strong>'.$ruser.'</strong>';
+            $respinfo = get_string('fillfeedback', 'smartquest').': <strong>'.$ruser.'</strong>';
             if ($this->survey->realm == 'public') {
                 // For a public smartquest, look for the course that used it.
                 $coursename = '';
@@ -2123,8 +2131,11 @@ class smartquest {
             $currentgroupid = 0;
         }
         if ($this->capabilities->readownresponses) {
-            if (($this->rtype == STUDEFFECT || $this->rtype == GUIDELINE) && count(smartquest_get_studeffect_users($this->survey->id))) {
-
+            //TOVI
+            $studeffects = smartquest_get_studeffect_users($this->survey->id);
+            if (($this->rtype == STUDEFFECT || $this->rtype == GUIDELINE) && count($studeffects)) {
+                $ind = array_search($USER->id, array_column($studeffects, 'value'));
+                $currentuser = $studeffects[0]['value'];
                 $sentsq = $CFG->wwwroot.'/mod/smartquest/myreport.php?id='. $this->cm->id . '%26amp%3Binstance='.$this->cm->instance.'%26amp%3Buser='.$USER->id.'%26amp%3Bbyresponse=0%26amp%3Baction=vresp';
                 $this->page->add_to_page('message',
                     ('<a href="'.$CFG->wwwroot.'/mod/smartquest/email.php?id=' . $this->cm->id . '&msg='. 
@@ -2133,11 +2144,9 @@ class smartquest {
                     '<a href="'.$CFG->wwwroot.'/mod/smartquest/myreport.php?id='.
                     $this->cm->id.'&amp;instance='.$this->cm->instance.'&amp;user='.$USER->id.'&byresponse=0&action=vresp">'.
                     get_string('toreport', 'smartquest') . '</a>'  .  '<br>' . 
-                    '<a href="'.$CFG->wwwroot.'/mod/smartquest/complete.php?id=' . $this->cm->id . '" >' . get_string("tonext", "smartquest").'</a>' 
+                    '<a href="'.$CFG->wwwroot.'/mod/smartquest/complete.php?id=' . $this->cm->id . '&user=' . $currentuser. '" >' . get_string("tonext", "smartquest").'</a>' 
                 ));
-
             } else {
-
                 $this->page->add_to_page('message',
                     (  '<a href="'.$CFG->wwwroot.'/mod/smartquest/email.php?id=' . $this->cm->id . '&msg='.
                     $this->cm->instance . '&emailto='. $USER->id .'">' . get_string("sentsmartqoest", "smartquest"). '</a>' .
@@ -2146,7 +2155,6 @@ class smartquest {
                     $this->cm->id.'&amp;instance='.$this->cm->instance.'&amp;user='.$USER->id.'&byresponse=0&action=vresp">'.
                     get_string('toreport', 'smartquest') . '</a>'
                     ));
-
             }
         } else {
             $this->page->add_to_page('message',

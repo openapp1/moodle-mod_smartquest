@@ -1156,7 +1156,7 @@ function smartquest_get_studeffect_users($sid, $userid = 0, $all= 0) {
     global $DB, $COURSE;
 
     $context = context_course::instance($COURSE->id);
-
+    $withoutusers = [];
     $users = get_users_by_capability($context, 'mod/smartquest:canbestudsurveyed');
     if ($all == 0) {
         $withoutusers = array_values($DB->get_records_select_menu('smartquest_response', 'survey_id = ? AND aboutuserid != 0', [$sid], '', 'id, aboutuserid'));
@@ -1181,10 +1181,11 @@ function smartquest_get_studeffect_users($sid, $userid = 0, $all= 0) {
     }
     //>
     foreach ($users as $id => $user) {
-        
-        if (in_array($user->id, $withoutusers)) {
-            //print_r($user->id . '  |  ');
-            continue;
+        if (is_array($withoutusers)) {
+            if (in_array($user->id, $withoutusers)) {
+                //print_r($user->id . '  |  ');
+                continue;
+            }
         }
         // Tami 24.11.19 add team & department to each user in the list.
         $select = 'SELECT uif.id, uid.data
@@ -1210,7 +1211,6 @@ function smartquest_get_studeffect_users($sid, $userid = 0, $all= 0) {
         ];
         $selected = 0;
     }
-
     return $returnusers;
 }
 

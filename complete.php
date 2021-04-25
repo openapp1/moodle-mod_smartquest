@@ -25,8 +25,8 @@ if (!isset($SESSION->smartquest)) {
 $SESSION->smartquest->current_tab = 'view';
 
 $id = optional_param('id', null, PARAM_INT);    // Course Module ID.
+$userid = optional_param('user', null, PARAM_INT);    // user ID.
 $a = optional_param('a', null, PARAM_INT);      // smartquest ID.
-
 $sid = optional_param('sid', null, PARAM_INT);  // Survey id.
 $resume = optional_param('resume', null, PARAM_INT);    // Is this attempt a resume of a saved attempt?
 
@@ -43,6 +43,9 @@ $PAGE->requires->js( new moodle_url($CFG->wwwroot . '/mod/smartquest/javascript/
 $url = new moodle_url($CFG->wwwroot.'/mod/smartquest/complete.php');
 if (isset($id)) {
     $url->param('id', $id);
+}
+if (isset($userid)) {
+    $url->param('userid', $userid);
 } else {
     $url->param('a', $a);
 }
@@ -75,7 +78,7 @@ if ($resume) {
 
 global $DB;
 // Generate the view HTML in the page.
-$smartquest->view();
+$smartquest->view($userid);
 
 
 // Output the page.
